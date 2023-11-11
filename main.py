@@ -1,3 +1,6 @@
+import datetime
+import time
+
 import torch
 import torchvision.models as models
 from torch.utils.data import DataLoader
@@ -6,22 +9,26 @@ from load_dataset import AVADataset
 
 
 def execute_finetune():
-    root_dir = 'C:/Users/adam/Pictures/ttt'
-    # root_dir = 'C:/Users/adam/Pictures/rjd/rjdcv/train/train/'
+    # root_dir = 'C:/Users/adam/Pictures/ttt'
+    root_dir = 'C:/Users/adam/Pictures/rjd/rjdcv/train/train/'
 
-    num_classes = 24  # Update this to the number of classes in your dataset
-    batch_size = 16
+    num_classes = 24
+    batch_size = 2
     learning_rate = 0.001
-    num_epochs = 2
+    num_epochs = 20
 
     # Initialize the dataset
     train_dataset = AVADataset(root_directory=root_dir)
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
     # Initialize the model
-    model = models.video.r3d_18()
+    model = models.video.r3d_18(pretrained=True)
     num_ftrs = model.fc.in_features
     model.fc = torch.nn.Linear(num_ftrs, num_classes)
+
+    # model.fc = torch.nn.Sequential(
+    #     torch.nn.Linear()
+    # )
 
     # If using a GPU
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -35,7 +42,8 @@ def execute_finetune():
 
     # Training loop
     for epoch in range(num_epochs):
-        print(f'START_EXECUTION: Epoch [{epoch + 1}/{num_epochs}]')
+        start_at = time.time()
+        print(f'START_EXECUTION: Epoch [{epoch + 1}/{num_epochs}], start at: {datetime.datetime.now().time()}, batch size: {batch_size}')
         model.train()
         running_loss = 0.0
         for images, labels in train_loader:
@@ -53,7 +61,8 @@ def execute_finetune():
 
             running_loss += loss.item()
 
-        print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_loader):.4f}')
+        ends_at = time.time()
+        print(f'Epoch [{epoch + 1}/{num_epochs}], Loss: {running_loss / len(train_loader):.4f}, ends at: {datetime.datetime.now().time()}, passed: {ends_at - start_at}')
 
     # Save the model checkpoint
     torch.save(model.state_dict(), 'model.pth')

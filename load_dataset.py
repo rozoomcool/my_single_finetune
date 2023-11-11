@@ -1,6 +1,7 @@
 import os
 
 import numpy as np
+import pandas as pd
 import torch
 from torch.utils.data import Dataset
 import cv2
@@ -11,13 +12,22 @@ from PIL import Image
 class AVADataset(Dataset):
     def __init__(self, root_directory, frames_len=16):
         self.videos_root = os.path.join(root_directory, 'videos')
+        self.classes_root = os.path.join(root_directory, 'classes.csv')
         self.frames_len = frames_len
-        self.classes = os.listdir(self.videos_root)
+        # self.classes = os.listdir(self.videos_root)
+
+        classes_cv_tmp = pd.read_csv(self.classes_root, header=None)
+        self.classes = []
+        for i in range(len(classes_cv_tmp.get(0))):
+            if i == 0:
+                continue
+            self.classes.append(classes_cv_tmp.get(1)[i])
+
         self.videos = self._load_videos()
 
         # Define the transformations
         self.transform = T.Compose([
-            T.Resize((128, 128)),
+            T.Resize((224, 224)),
             T.ToTensor(),
             T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
@@ -25,10 +35,12 @@ class AVADataset(Dataset):
     def _load_videos(self):
         videos = []
         for class_idx, class_name in enumerate(self.classes):
+            print(f"{class_idx} : {class_name}")
             class_dir = os.path.join(self.videos_root, class_name)
-            for video_name in os.listdir(class_dir):  # Make sure to use the correct video file extension
-                videos.append((os.path.join(class_dir, video_name), class_idx))
-        return list(set(videos))
+            for index, video_name in enumerate(os.listdir(class_dir)):
+                if index % 15 == 0:
+                    videos.append((os.path.join(class_dir, video_name), class_idx))
+        return videos
 
     def __len__(self):
         return len(self.videos)
@@ -61,6 +73,6 @@ class AVADataset(Dataset):
 
         # If there were not enough frames, pad with the last frame
         while len(frames) < self.frames_len:
-            frames.append(frames[-1] if frames else Image.new('RGB', (128, 128), color=(0, 0, 0)))
+            frames.append(frames[-1])
 
         return frames
