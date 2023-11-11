@@ -5,8 +5,10 @@ from torch.utils.data import DataLoader
 from data_augmentation import transform
 from load_dataset import AVADataset
 
+root_dir = 'C:/Users/adam/Pictures/rjd/rjdcv/train/train/'
+
 def execute_finetune():
-    num_classes = 5  # Количество ваших кастомных классов
+    num_classes = 24  # Количество ваших кастомных классов
     batch_size = 16  # Размер батча
     learning_rate = 0.001  # Скорость обучения
     num_epochs = 10
@@ -16,10 +18,8 @@ def execute_finetune():
     #     param.requires_grad = False
     # model.fc.requires_grad = True
 
-    train_dataset = AVADataset(videos_root='C:\\Users\\adam\\Pictures\\РЖД Видео\\РЖД CV\\train\\train\\videos',
-                               classes_csv='C:\\Users\\adam\\Pictures\\РЖД Видео\\РЖД CV\\train', transform=transform)
-    val_dataset = AVADataset(videos_root='path_to_val_data',
-                             classes_csv='C:\\Users\\adam\\Pictures\\РЖД Видео\\РЖД CV\\train', transform=transform)
+    train_dataset = AVADataset(root_directory=root_dir, transform=transform)
+    val_dataset = AVADataset(root_directory=root_dir, transform=transform)
 
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
     val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False)

@@ -1,4 +1,4 @@
-from mpmath.identification import transforms
+from torchvision import transforms
 
 transform = transforms.Compose([
     # Здесь должны быть ваши трансформации, например:
