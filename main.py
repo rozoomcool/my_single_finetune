@@ -3,6 +3,7 @@ import time
 
 import torch
 import torchvision.models as models
+from torch import nn
 from torch.utils.data import DataLoader
 
 from load_dataset import AVADataset
@@ -16,28 +17,34 @@ def execute_finetune():
     val_root_dir = 'C:/Users/adam/Pictures/rjd/rjdcv/train/newTrain/wall'
 
     num_classes = 24
-    batch_size = 3
+    batch_size = 2
     learning_rate = 0.001
-    num_epochs = 10
+    num_epochs = 100
 
     # Initialize the dataset
-    train_dataset = AVADataset(videos_directory=train_root_dir, classes_dir=classes_dir)
+    train_dataset = AVADataset(videos_directory=train_root_dir, classes_dir=classes_dir, delta=2)
     train_loader = DataLoader(dataset=train_dataset, batch_size=batch_size, shuffle=True)
 
-    val_dataset = AVADataset(videos_directory=val_root_dir, classes_dir=classes_dir)
+    val_dataset = AVADataset(videos_directory=val_root_dir, classes_dir=classes_dir, delta=1)
     val_loader = DataLoader(dataset=val_dataset, batch_size=batch_size, shuffle=False)
 
     # Initialize the model
     model = models.video.r3d_18(pretrained=True)
     num_ftrs = model.fc.in_features
-    # model.fc = torch.nn.Linear(num_ftrs, num_classes)
-
-    model.fc = torch.nn.Sequential(
-        torch.nn.Linear(num_ftrs, 512),
-        torch.nn.ReLU(),
-        torch.nn.Dropout(0.5),
-        torch.nn.Linear(512, 24)
+    model.fc = torch.nn.Linear(num_ftrs, num_classes)
+    model.fc = nn.Sequential(
+        nn.Linear(num_ftrs, 512),
+        nn.ReLU(),
+        nn.Dropout(0.5),
+        nn.Linear(512, 24)
     )
+
+    # model.fc = torch.nn.Sequential(
+    #     torch.nn.Linear(num_ftrs, 512),
+    #     torch.nn.ReLU(),
+    #     torch.nn.Dropout(0.5),
+    #     torch.nn.Linear(512, 24)
+    # )
 
     # If using a GPU
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")

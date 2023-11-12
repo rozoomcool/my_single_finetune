@@ -29,6 +29,9 @@ class AVADataset(Dataset):
         # Define the transformations
         self.transform = T.Compose([
             T.Resize((224, 224)),
+            T.RandomCrop((224, 224)),  # Случайный кроп до целевого размера
+            T.RandomHorizontalFlip(),  # Случайное горизонтальное отражение
+            T.ColorJitter(brightness=0.2, contrast=0.2, saturation=0.2, hue=0.1),
             T.ToTensor(),
             T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]),
         ])
