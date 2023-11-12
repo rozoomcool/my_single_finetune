@@ -10,10 +10,11 @@ from PIL import Image
 
 
 class AVADataset(Dataset):
-    def __init__(self, root_directory, frames_len=16):
-        self.videos_root = os.path.join(root_directory, 'videos')
-        self.classes_root = os.path.join(root_directory, 'classes.csv')
+    def __init__(self, videos_directory, classes_dir, delta = 10, frames_len=16):
+        self.videos_root = os.path.join(videos_directory)
+        self.classes_root = os.path.join(classes_dir)
         self.frames_len = frames_len
+        self.delta = delta
         # self.classes = os.listdir(self.videos_root)
 
         classes_cv_tmp = pd.read_csv(self.classes_root, header=None)
@@ -38,7 +39,7 @@ class AVADataset(Dataset):
             print(f"{class_idx} : {class_name}")
             class_dir = os.path.join(self.videos_root, class_name)
             for index, video_name in enumerate(os.listdir(class_dir)):
-                if index % 15 == 0:
+                if index % self.delta == 0:
                     videos.append((os.path.join(class_dir, video_name), class_idx))
         return videos
 
